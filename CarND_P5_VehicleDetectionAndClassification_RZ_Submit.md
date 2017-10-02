@@ -70,7 +70,7 @@ For spacial binning, I tried 8, 12, 16 and 32 bins. Higher number of bins seemed
 ![png](output_20_1.png)
 
 
-####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
+3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
 The function 'extract_features' implemented in cell #11 of the notebook uses spatial binning, color histogram and hog features to generate a comprehensive stacked feature set for the images.
 
@@ -88,9 +88,9 @@ The trained svm achieved the accuracy of 0.987 for the testing data.
 
 
 
-###Sliding Window Search
+### Sliding Window Search
 
-####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
+1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
 The code for the sliding window search is implemented in cells #15, 16 and 19. 
 I chose three types of windows to search for vehicles: large, medium and small. Parameters for the windows are set as follows:
@@ -121,7 +121,7 @@ The sliding window function searches for the cars within the specified regions u
 
 
 
-####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
+2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
 Ultimately I searched on three scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  
 
@@ -200,7 +200,7 @@ To reduce false positives and combine detected boxes, heat map and thresholding 
 
 ---
 
-###Discussion
+### Discussion
 
 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
