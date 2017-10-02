@@ -14,9 +14,13 @@ The goals / steps of this project are the following:
 * Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
 * Estimate a bounding box for vehicles detected.
 
-### Writeup / README
+## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
+###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
-#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one. You can submit your writeup as markdown or pdf. Here is a template writeup for this project you can use as a guide and a starting point.
+---
+###Writeup / README
+
+####1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Vehicle-Detection/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
 
 You're reading it!
 
@@ -28,147 +32,16 @@ The code for this step is contained in the first code cell of the IPython notebo
 
 I started by reading in all the vehicle and non-vehicle images. Here is an example of one of each of the vehicle and non-vehicle classes:
 
-First, required libraries including sklearn, matplotlib and skimage are imported.
-
-
-```python
-# Import libraries
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-%matplotlib inline
-from mpl_toolkits.mplot3d import Axes3D
-
-import glob
-import time
-import math
-
-import cv2
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.ensemble import RandomForestClassifier
-from skimage.feature import hog
-# from sklearn.cross_validation import train_test_split
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from skimage.feature import blob_dog, blob_log, blob_doh
-from scipy.ndimage.measurements import label
-from sklearn.utils import shuffle
-from sklearn.metrics import roc_auc_score
-from sklearn.metrics import accuracy_score
-from sklearn.svm import LinearSVC
-```
-
-#### Reading Data
-
-
-```python
-car_far = glob.glob('vehicles/vehicles/GTI_Far/image*.png')
-car_right = glob.glob('vehicles/vehicles/GTI_Right/image*.png')
-car_left = glob.glob('vehicles/vehicles/GTI_Left/image*.png')
-car_middleclose = glob.glob('vehicles/vehicles/GTI_MiddleClose/image*.png')
-car_extracted = glob.glob('vehicles/vehicles/KITTI_extracted/*.png')
-cars = car_far + car_left + car_right + car_middleclose + car_extracted
-shuffle(cars)
-
-not_car_extras = glob.glob('non-vehicles/non-vehicles/Extras/extra*.png')
-not_car_gti = glob.glob('non-vehicles/non-vehicles/GTI/image*.png')
-not_cars = not_car_extras + not_car_gti
-shuffle(not_cars)
-# not_cars = not_cars[0:len(cars)]
-
-print("Number of Car Images:",len(cars))
-print("Number of Non-Car Images:",len(not_cars))
-```
-
-    Number of Car Images: 8792
-    Number of Non-Car Images: 8968
-    
-
-#### Visualization Examples from the Data Set
-
-
-```python
-def rand_image(cars,not_cars):
-    car_rep = np.random.randint(0, len(cars))
-    not_car_rep = np.random.randint(0, len(not_cars))
-    car_rep_image = cv2.imread(cars[car_rep])
-    not_car_rep_image = cv2.imread(not_cars[not_car_rep])
-    return car_rep_image, not_car_rep_image
-
-my_random_car, my_random_not_car = rand_image(cars,not_cars)
-
-fig, axs = plt.subplots(1,2, figsize=(15, 4))
-axs = axs.ravel()
-
-axs[0].axis('off')
-axs[0].set_title('Car')
-axs[0].imshow(my_random_car)
-
-axs[1].axis('off')
-axs[1].set_title('Not Car')
-axs[1].imshow(my_random_not_car)
-```
-
-
-
-
-    <matplotlib.image.AxesImage at 0x3922780>
-
-
-
-
 ![png](output_8_1.png)
 
-
-### Display Color Histogram Feature
-
-
-```python
-# Define a function to compute color histogram features  
-def color_hist(img, nbins=32, bins_range=(0, 256)):
-    # Compute the histogram of the RGB channels separately
-    rhist = np.histogram(img[:,:,0], bins=nbins, range=bins_range)
-    ghist = np.histogram(img[:,:,1], bins=nbins, range=bins_range)
-    bhist = np.histogram(img[:,:,2], bins=nbins, range=bins_range)
-    # Generating bin centers
-    bin_edges = rhist[1]
-    bin_centers = (bin_edges[1:]  + bin_edges[0:len(bin_edges)-1])/2
-    # Concatenate the histograms into a single feature vector
-    hist_features = np.concatenate((rhist[0], ghist[0], bhist[0]))
-    # Return the individual histograms, bin_centers and feature vector
-    return rhist, ghist, bhist, bin_centers, hist_features
-```
-
-
-```python
-rh, gh,bh, bincen, hist_features_car = color_hist(my_random_car, nbins =8, bins_range =(0,256))
-
-# Plot a figure with all three bar charts
-if rh is not None:
-    fig = plt.figure(figsize=(12,3))
-    plt.subplot(131)
-    plt.bar(bincen, rh[0])
-    plt.xlim(0, 256)
-    plt.title('R Histogram')
-    plt.subplot(132)
-    plt.bar(bincen, gh[0])
-    plt.xlim(0, 256)
-    plt.title('G Histogram')
-    plt.subplot(133)
-    plt.bar(bincen, bh[0])
-    plt.xlim(0, 256)
-    plt.title('B Histogram')
-    fig.tight_layout()
-else:
-    print('Your function is returning None for at least one variable...')
-```
-
+Color histogram for the sample car is displayed below. 32 bins and the range of (0, 255) is used for computing the histogram.
 
 ![png](output_11_0.png)
 
+Spatially-Binned features for the random car using the 'YCrCb' color space is as follows:
 
-### Spatial Feature Vector
 
+I then explored different color spaces `skimage.hog()` parameters. Based on multiple trials, I chose the following parameters for HOG:
 
 ```python
 # Define HOG parameters
@@ -176,16 +49,17 @@ color_space = 'YCrCb' # Can be BGR, HSV, LUV, HLS, YUV, YCrCb
 orient = 32
 pix_per_cell = 16
 cell_per_block = 2
-hog_channel = 'ALL' 
-spatial_size=(32, 32)
-hist_bins=32
-spatial_feat=True
-hist_feat=True
-hog_feat=True
+
 ```
 
+Here is the HOG features using the `YCrCb` color space and the above HOG parameters:
 
-```python
+
+
+
+
+python
+
 # Define a function to compute binned color features  
 def bin_spatial(img, color_space='RGB', size=(32, 32)):
     # Convert image to new color space (if specified)
