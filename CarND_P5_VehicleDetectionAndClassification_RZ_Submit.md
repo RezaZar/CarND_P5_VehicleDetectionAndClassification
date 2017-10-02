@@ -32,15 +32,15 @@ The code for this step is contained in the first code cell of the IPython notebo
 
 I started by reading in all the vehicle and non-vehicle images. Here is an example of one of each of the vehicle and non-vehicle classes:
 
-![png](output_8_1.png)
+![png](output_6_1.png)
 
 Color histogram for the sample car is displayed below. 32 bins and the range of (0, 255) is used for computing the histogram.
 
-![png](output_11_0.png)
+![png](output_9_0.png)
 
 Spatially-Binned features for the random car using the 'YCrCb' color space is as follows:
 
-![png](output_15_1.png)
+![png](output_13_1.png)
 
 I then explored different color spaces `skimage.hog()` parameters. Based on multiple trials, I chose the following parameters for HOG:
 
@@ -56,7 +56,7 @@ cell_per_block = 2
 Here is the HOG features using the `YCrCb` color space and the above HOG parameters:
 
 
-![png](output_19_3.png)
+![png](output_17_3.png)
 
 
 
@@ -67,7 +67,7 @@ For the color space, using three channels helps the model as the model receives 
 After trying smaller orientations and pixle per cells, I decided to use (32, 32) orientations and (16, 16) pixles per cel to feed more information to the model. Cells per block was kept constant as (2, 2) during different trials.
 For spacial binning, I tried 8, 12, 16 and 32 bins. Higher number of bins seemed to result in better accuracy.
 
-![png](output_22_1.png)
+![png](output_20_1.png)
 
 
 ####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
@@ -79,11 +79,11 @@ The svm is used as the classifier since it provides a good combination of speed 
 The trained svm achieved the accuracy of 0.987 for the testing data.
 
 ```python
-    19.08 Seconds to train SVC...
-    Test Accuracy of SVC =  0.9918
-    My SVC predicts:  [ 0.  1.  0.  0.  1.  1.  0.  1.  0.  0.]
-    For these 10 labels:  [ 0.  1.  0.  0.  1.  1.  0.  1.  0.  0.]
-    0.003 Seconds to predict 10 labels with SVC
+    15.58 Seconds to train SVC...
+    Test Accuracy of SVC =  0.987
+    My SVC predicts:  [ 0.  0.  0.  1.  0.  0.  1.  1.  0.  1.]
+    For these 10 labels:  [ 0.  0.  0.  0.  0.  0.  1.  1.  0.  1.]
+    0.001 Seconds to predict 10 labels with SVC
  ```   
 
 
@@ -128,32 +128,32 @@ Ultimately I searched on three scales using YCrCb 3-channel HOG features plus sp
 The results on test images is illustrated below:
 
 
-![png](output_33_2.png)
+![png](output_31_2.png)
 
 
 
-![png](output_33_3.png)
+![png](output_31_3.png)
 
 
 
-![png](output_33_4.png)
+![png](output_31_4.png)
 
 
 
-![png](output_33_5.png)
+![png](output_31_5.png)
 
 
 
-![png](output_33_6.png)
+![png](output_31_6.png)
 
 
 
-![png](output_33_7.png)
+![png](output_31_7.png)
 
 
 ### Video Implementation
 
-####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
+1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
 Here's a [link to my video result](./project_video.mp4)
 
 
@@ -163,7 +163,7 @@ Here's a [link to my video result](./project_video.mp4)
 </video>
 
 
-####2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
+2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
 I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  The heat maps are tracked over 10 frames. I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected. 
 
@@ -174,39 +174,35 @@ Here's an example result showing the heatmap from a series of frames of video, t
 To reduce false positives and combine detected boxes, heat map and thresholding is implemented in cells #21 and 22. The results for the test images is as follows:
 
 
-![png](output_37_1.png)
+![png](output_35_1.png)
 
 
 
-![png](output_37_2.png)
+![png](output_35_2.png)
 
 
 
-![png](output_37_3.png)
+![png](output_35_3.png)
 
 
 
-![png](output_37_4.png)
+![png](output_35_4.png)
 
 
 
-![png](output_37_5.png)
+![png](output_35_5.png)
 
 
 
-![png](output_37_6.png)
+![png](output_35_6.png)
 
-
-
-### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
-![alt text][image6]
 
 
 ---
 
 ###Discussion
 
-####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
 There are still some false positives in the model especially for areas within shades. The models at points faces challenges to fully detect a car which is on the side. Larger set of training data can help the model to perform better. Also, better feature extration using combined color spaces can be helpful.
 
